@@ -1,0 +1,71 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+if (System.env.BUILD_NUMBER != null) {
+    version = "${minecraftVersion}-${modVersion}.$System.env.BUILD_NUMBER"
+} else {
+    version = "${minecraftVersion}-${modVersion}"
+}
+group = "riskyken.snowSteps"
+archivesBaseName = "Snow Steps"
+
+minecraft {
+    //version = "${minecraftVersion}-${forgeVersion}"
+	version = "1.9.4-12.17.0.1968"
+    runDir = "run"
+
+    replaceIn "common/lib/LibModInfo.java"
+    replace "@VERSION@", project.version
+	
+	mappings = "snapshot_20160518"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+task apiJar(type: Jar) {
+    from sourceSets.main.allSource
+    from sourceSets.main.output
+    include 'riskyken/armourersWorkshop/api/**'
+    classifier = 'api'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    from sourceSets.main.output
+    classifier = 'sources'
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+artifacts {
+    archives apiJar
+    archives sourcesJar
+    archives deobfJar
+}
